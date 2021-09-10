@@ -39,66 +39,42 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Adds inventory item to the shopping cart.
+        /// Updates the count of the inventory item in the shopping cart, incrementing or decrementing by one.
         /// </summary>
-        /// <param name="inventoryItemId">Inventory item to create.</response>
+        /// <param name="inventoryItemId">Inventory item whose count will be updated.</response>
+        /// <param name="increaseCount">Determines if the count is increased or decreated by one.</response>
         /// <response code="200">Returns the created purchase item.</response>
+        /// <response code="400">Tried to decrease the count for an item not in the shopping cart.</response>
         /// <response code="404">Input inventory item does not exist.</response>
         /// <remarks>
+        /// If a purchase item does not exist for the 
         /// If a purchase item exists in the shopping cart for the given inventory item, the quantity is increased by one.
         /// If a purchase item does not exist in the shopping cart for the given inventory item, a purchase item is created for the inventory item with a quantity of one.
         /// </remarks>
         [HttpPut]
         [ProducesResponseType(typeof(PurchaseItem), Status200OK)]
-        [Route("AddInventory")]
-        public IActionResult AddInventoryItemToShoppingCart([FromBody] int inventoryItemId) // todo: part of Inventory controller instead?
+        [Route("UpsertInventory")]
+        public IActionResult AddInventoryItemToShoppingCart([FromBody] int inventoryItemId, bool increaseCount)
         {
-            _logger.LogInformation($"Adding inventory item with InventoryItemId {inventoryItemId} to shopping cart.");
+            _logger.LogInformation($"Updating count of inventory item with InventoryItemId {inventoryItemId} in shopping cart.");
 
             if (!_inventoryItemBusiness.InventoryItemExists(inventoryItemId))
             {
                 _logger.LogError($"Inventory item with InventoryItemId {inventoryItemId} does not exist.");
                 return NotFound();
             }
+            if (!increaseCount && !_shoppingCartItemBusiness.ShoppingCartItemExists(x => x.InventoryItemId == inventoryItemId && x.IsInShoppingCart))
+            {
+                _logger.LogError($"Cannot decrement the count for an inventory item that is not in the shopping cart. Quantity cannot be less than 0.");
+                return BadRequest();
+            }
 
-            var result = _shoppingCartItemBusiness.AddInventoryItemToShoppingCart(inventoryItemId);
+            var result = _shoppingCartItemBusiness.UpsertInventoryItemInShoppingCart(inventoryItemId, increaseCount);
 
-            _logger.LogInformation($"Added inventory item with InventoryItemId {inventoryItemId} to shopping cart on purchase item with PurchaseItemId {result.PurchaseItemId}.");
+            _logger.LogInformation($"Updated count of inventory item with InventoryItemId {inventoryItemId} in shopping cart on purchase item with PurchaseItemId {result?.PurchaseItemId}.");
 
             return Ok(result);
         }
-
-        ///// <summary>
-        ///// Adds input Item to the Shopping Cart
-        ///// </summary>
-        ///// <param name="itemInput">Item to create.</response>
-        ///// <response code="200">Returns the created Item.</response>
-        ///// <response code="422">Input Item is invalid.</response>
-        //[HttpPost]
-        //[ProducesResponseType(typeof(PurchaseItem), Status200OK)]
-        //public IActionResult CreateShoppingCartItem([FromBody] InventoryItemInput itemInput)
-        //{
-        //    _logger.LogInformation("Creating shopping cart Item");
-
-        //    var isValid = true;
-        //    var errorMessage = "";
-        //    // call validator => set error messages / return error messages (boolean, string)
-        //    // validate input not null
-        //    // validate price is not negative
-        //    // validate that item type is valid / exists
-
-        //    if (!isValid)
-        //    {
-        //        _logger.LogError($"Failed to create shopping cart Item due to validation errors: {errorMessage}.");
-        //        return UnprocessableEntity();
-        //    }
-
-        //    var result = _shoppingCartItemBusiness.CreateShoppingCartItem(itemInput);
-
-        //    _logger.LogInformation($"Created shopping cart Item with ItemId {result.ItemId}");
-
-        //    return Ok(result);
-        //}
 
         /// <summary>
         /// Removes the Item for the given Id from the Shopping Cart

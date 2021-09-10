@@ -2,6 +2,7 @@
 using API.Contracts.Utilities;
 using API.DbContext;
 using API.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,56 +22,59 @@ namespace API.Business
             return SalesTaxDbContext.PurchaseItems.Any(x => x.PurchaseItemId == itemId && x.IsInShoppingCart);
         }
 
+        public bool ShoppingCartItemExists(Func<PurchaseItem, bool> predicate)
+        {
+            return SalesTaxDbContext.PurchaseItems.Any(predicate);
+        }
+
         public IEnumerable<PurchaseItem> GetShoppingCartItems()
         {
             return SalesTaxDbContext.PurchaseItems.Where(x => x.IsInShoppingCart);
         }
 
-        public PurchaseItem AddInventoryItemToShoppingCart(int inventoryItemId)
+        public PurchaseItem UpsertInventoryItemInShoppingCart(int inventoryItemId, bool increaseCount)
         {
             var purchaseItem = SalesTaxDbContext.PurchaseItems.FirstOrDefault(x => x.InventoryItemId == inventoryItemId && x.IsInShoppingCart);
-            if (purchaseItem == null)
-            {
-                var inventoryItem = SalesTaxDbContext.InventoryItems.FirstOrDefault(x => x.InventoryItemId == inventoryItemId);
 
-                purchaseItem = new PurchaseItem()
+            if (increaseCount)
+            {
+                if (purchaseItem == null)
                 {
-                    PurchaseItemId = _dataUtility.GenerateNextId(SalesTaxDbContext.PurchaseItems, x => x.PurchaseItemId),
-                    InventoryItemId = inventoryItemId,
-                    InventoryItem = inventoryItem,
-                    Quantity = 1,
-                    OrderId = null
-                };
-                SalesTaxDbContext.PurchaseItems.Add(purchaseItem);
+                    var inventoryItem = SalesTaxDbContext.InventoryItems.FirstOrDefault(x => x.InventoryItemId == inventoryItemId);
+
+                    purchaseItem = new PurchaseItem()
+                    {
+                        PurchaseItemId = _dataUtility.GenerateNextId(SalesTaxDbContext.PurchaseItems, x => x.PurchaseItemId),
+                        InventoryItemId = inventoryItemId,
+                        InventoryItem = inventoryItem,
+                        Quantity = 1,
+                        OrderId = null
+                    };
+                    SalesTaxDbContext.PurchaseItems.Add(purchaseItem);
+                }
+                else
+                {
+                    purchaseItem.Quantity++;
+                }
             }
             else
             {
-                purchaseItem.Quantity++;
+                if (purchaseItem == null) { return null; }
+                else if (purchaseItem.Quantity == 1)
+                {
+                    SalesTaxDbContext.PurchaseItems.Remove(purchaseItem);
+                    return null;
+                }
+                else
+                {
+                    purchaseItem.Quantity--;
+                }
             }
 
             purchaseItem.TotalPrice = purchaseItem.InventoryItem.TotalPrice * purchaseItem.Quantity;
 
             return purchaseItem;
         }
-
-        //public PurchaseItem CreateShoppingCartItem(InventoryItemInput itemInput)
-        //{
-        //    var itemType = SalesTaxDbContext.ItemTypes.FirstOrDefault(x => x.ItemTypeId == itemInput.ItemTypeId);
-
-        //    var createdItem = new PurchaseItem()
-        //    {
-        //        ItemId = GenerateNextId(SalesTaxDbContext.Items, x => x.ItemId),
-        //        ItemName = itemInput.ItemName,
-        //        ItemTypeId = itemInput.ItemTypeId,
-        //        Price = itemInput.Price,
-        //        SalesTax = CalculateSalesTax(itemInput.Price, itemType),
-        //        ItemType = itemType,
-        //        OrderId = null,
-        //    };
-
-        //    SalesTaxDbContext.Items.Add(createdItem);
-        //    return createdItem;
-        //}
 
         public void DeleteShoppingCartItem(int itemId)
         {
