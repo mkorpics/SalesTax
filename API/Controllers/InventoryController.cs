@@ -49,6 +49,7 @@ namespace API.Controllers
         /// <response code="422">Input Item is invalid.</response>
         [HttpPost]
         [ProducesResponseType(typeof(InventoryItem), Status200OK)]
+        [ProducesResponseType(typeof(string), Status422UnprocessableEntity)]
         public IActionResult CreateInventoryItem([FromBody] InventoryItemInput itemInput)
         {
             _logger.LogInformation("Creating inventory item");
@@ -58,7 +59,7 @@ namespace API.Controllers
             if (!isValid)
             {
                 _logger.LogError($"Failed to create inventory item due to validation errors: {errorMessage}.");
-                return UnprocessableEntity();
+                return UnprocessableEntity(errorMessage);
             }
 
             var result = _inventoryItemBusiness.CreateInventoryItem(itemInput);
@@ -78,6 +79,7 @@ namespace API.Controllers
         [HttpDelete]
         [ProducesResponseType(Status204NoContent)]
         [ProducesResponseType(Status404NotFound)]
+        [ProducesResponseType(Status422UnprocessableEntity)]
         [Route("{itemId}")]
         public IActionResult DeleteInventoryItem(int itemId)
         {
