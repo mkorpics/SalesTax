@@ -26,7 +26,7 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Gets all items currently in the shopping cart.
+        /// Gets all items in the shopping cart.
         /// </summary>
         /// <response code="200">Returns the list of purchase items in the shopping cart.</response>
         [HttpGet]
@@ -42,17 +42,18 @@ namespace API.Controllers
         /// Updates the count of the inventory item in the shopping cart, incrementing or decrementing by one.
         /// </summary>
         /// <param name="inventoryItemId">Inventory item whose count will be updated.</response>
-        /// <param name="increaseCount">Determines if the count is increased or decreated by one.</response>
-        /// <response code="200">Returns the created purchase item.</response>
-        /// <response code="400">Tried to decrease the count for an item not in the shopping cart.</response>
+        /// <param name="increaseCount">Determines if the count is increased or decreased by one.</response>
+        /// <response code="200">Returns the upserted purchase item. Result will be null if all inventory items for the given inventoryItemId were removed from the cart.</response>
+        /// <response code="400">Attempt made to decrease the count for an item not in the shopping cart.</response>
         /// <response code="404">Input inventory item does not exist.</response>
         /// <remarks>
-        /// If a purchase item does not exist for the 
-        /// If a purchase item exists in the shopping cart for the given inventory item, the quantity is increased by one.
-        /// If a purchase item does not exist in the shopping cart for the given inventory item, a purchase item is created for the inventory item with a quantity of one.
+        /// Manages the count of the inventory items in the shopping cart. 
+        /// Based on the current quantity and increaseCount value, a purchase item will be created with a quantiy of one, update its quantity, or be deleted.
         /// </remarks>
         [HttpPut]
         [ProducesResponseType(typeof(PurchaseItem), Status200OK)]
+        [ProducesResponseType(Status400BadRequest)]
+        [ProducesResponseType(Status404NotFound)]
         [Route("UpsertInventory")]
         public IActionResult AddInventoryItemToShoppingCart([FromBody] int inventoryItemId, bool increaseCount)
         {
@@ -77,7 +78,7 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Removes the Item for the given Id from the Shopping Cart
+        /// Removes the purchase item for the given itemId from the Shopping Cart
         /// </summary>
         /// <param name="itemId">Item to remove.</response>
         /// <response code="200">Item was removed.</response>

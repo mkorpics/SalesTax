@@ -51,18 +51,21 @@ namespace API.Controllers
         [ProducesResponseType(typeof(IEnumerable<Order>), Status200OK)]
         public IActionResult GetOrder(int orderId)
         {
+            _logger.LogInformation($"Retrieving order with OrderId={orderId}");
             var result = _orderBusiness.GetOrder(orderId);
             if (result == null)
             {
+                _logger.LogError($"Failed to get Order with OrderId={orderId}. Order does not exist.");
                 return NotFound();
             }
+            _logger.LogInformation($"Retrieved order with OrderId={orderId}");
             return Ok(result);
         }
 
         /// <summary>
         /// Creates Order for the input shopping cart purchase items.
         /// </summary>
-        /// <param name="purchaseItemIds">Shopping cart purchase items for the order.</response>
+        /// <param name="purchaseItemIds">Shopping cart purchase item Ids for the order.</response>
         /// <response code="200">Returns the created order.</response>
         /// <response code="422">Input purchase items are invalid.</response>
         /// <remarks>When the input purchase items are added to the created order, they are removed from the shopping cart.</remarks>

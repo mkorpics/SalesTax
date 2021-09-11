@@ -42,7 +42,7 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Adds inventory item.
+        /// Creates inventory item.
         /// </summary>
         /// <param name="itemInput">Item to create.</response>
         /// <response code="200">Returns the created Item.</response>
@@ -70,10 +70,10 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Removes the inventory item for the given Id
+        /// Deletes the inventory item for the given Id
         /// </summary>
-        /// <param name="itemId">Item to remove.</response>
-        /// <response code="200">Item was removed.</response>
+        /// <param name="itemId">Item to delete.</response>
+        /// <response code="200">Item was deleted.</response>
         /// <response code="404">Item does not exist.</response>
         /// <response code="422">Item is not valid to delete. It is in use in the shopping cart or on an order.</response>
         [HttpDelete]
@@ -115,7 +115,7 @@ namespace API.Controllers
             }
             else
             {
-                if (input.Price < 0) // todo: also validate max value?
+                if (input.Price < 0)
                 {
                     errorMessages.Add("Price must be greater than or equal to 0.");
                 }
