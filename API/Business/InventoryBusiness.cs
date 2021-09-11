@@ -58,7 +58,10 @@ namespace API.Business
         public void DeleteInventoryItem(int itemId)
         {
             var item = SalesTaxDbContext.InventoryItems.FirstOrDefault(x => x.InventoryItemId == itemId);
-            SalesTaxDbContext.InventoryItems.Remove(item);
+            if (item != null)
+            {
+                SalesTaxDbContext.InventoryItems.Remove(item);
+            }
         }
 
         private static decimal CalculateSalesTax(decimal price, ItemType itemType)
