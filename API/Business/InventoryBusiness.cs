@@ -77,8 +77,6 @@ namespace API.Business
                 var importSalesTax = importSalesTaxRate * price;
                 salesTax += importSalesTax;
             }
-            // TODO: need?
-            //var salesTaxRoundedToTwoPlaces = decimal.Round(salesTax, 2);
             var salesTaxRoundedUpToNearestFifthCent = Math.Ceiling(salesTax / .05m) * .05m;
             return salesTaxRoundedUpToNearestFifthCent;
         }
