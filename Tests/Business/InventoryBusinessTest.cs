@@ -118,7 +118,7 @@ namespace Tests.Business
         [TestCase(12.49, false, false, 12.49)]
         [TestCase(14.99, true, false, 16.49)]
         [TestCase(18.99, true, false, 20.89)]
-        [TestCase(10, false, true, 10.50)]
+        [TestCase(10.00, false, true, 10.50)]
         [TestCase(11.25, false, true, 11.85)]
         [TestCase(27.99, true, true, 32.19)]
         [TestCase(47.50, true, true, 54.65)]
