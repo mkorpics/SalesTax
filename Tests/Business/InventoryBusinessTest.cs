@@ -21,6 +21,7 @@ namespace Tests.Business
         [SetUp]
         public void Setup()
         {
+            SalesTaxDbContext.ItemTypes = new List<ItemType>();
             SalesTaxDbContext.InventoryItems = new List<InventoryItem>();
             SalesTaxDbContext.PurchaseItems = new List<PurchaseItem>();
 
