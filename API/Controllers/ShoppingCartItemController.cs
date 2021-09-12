@@ -87,7 +87,7 @@ namespace API.Controllers
         [ProducesResponseType(Status204NoContent)]
         [ProducesResponseType(Status404NotFound)]
         [Route("{itemId}")]
-        public IActionResult DeleteShoppintCartItem(int itemId)
+        public IActionResult DeleteShoppingCartItem(int itemId)
         {
             _logger.LogInformation($"Removing Item with ItemId {itemId} from the shopping cart.");
 
